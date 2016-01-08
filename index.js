@@ -11,9 +11,20 @@ function SpriteWebpackPlugin(options) {
 SpriteWebpackPlugin.prototype.apply = function(compiler) {
   var self = this;
   var opt = self.options;
-  Sprite.createStyles(opt);
-  Sprite.createImage(opt);
-  Sprite.addImport(opt);
+  var built = false;
+  compiler.plugin("compilation", function(compilation) {
+    compilation.plugin("optimize-tree", function(chunks, modules, callback) {
+      if(built) {
+        return callback();
+      }
+      built = true;
+      Sprite.createStyles(opt);
+      Sprite.createImage(opt, function(){
+        Sprite.addImport(opt);
+        callback()
+      });
+    })
+  })
 }
 
 module.exports = SpriteWebpackPlugin;
